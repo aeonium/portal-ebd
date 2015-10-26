@@ -219,86 +219,103 @@ def dcat():
     dcat +=    """         </dct:extent>\n"""
     dcat +=    """         <foaf:homepage rdf:resource=\"""" + current_app.config['CFG_SITE_URL'] + """\"/>\n"""
     dcat +=    """         <dct:publisher rdf:resource="http://www.lifewatch.eu/"/>\n"""
-    dcat +=    """         <dcat:themeTaxonomy rdf:resource="http://datos.gob.es/kos/sector-publico/sector/medio-rural-pesca"/>\n"""
-    dcat +=    """         <dcat:themeTaxonomy rdf:resource="http://datos.gob.es/kos/sector-publico/sector/medio-ambiente"/>\n"""
+    dcat +=    """         <dcat:themeTaxonomy rdf:resource="http://datos.gob.es/kos/sector-publico/sector/ciencia-tecnologia"/>\n"""
 
     issues = []
     modifications = []
     for recid in recids:
-        issues.append(get_creation_date(recid))
-        modifications.append(get_modification_date(recid))
+       issues.append(get_creation_date(recid))
+       modifications.append(get_modification_date(recid))
 
     dcat +=    """         <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(min(issues)) + """</dct:issued>\n"""
     dcat +=    """         <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(max(modifications)) + """</dct:modified>\n"""
 
     for recid in recids:
-        record = get_record(recid)
-        dcat += """         <dcat:dataset>\n"""
+       record = get_record(recid)
+       dcat += str(record) + "\n"
+       dcat += """         <dcat:dataset>\n"""
 
-        if 'doi' in record:
-            dcat += """            <dcat:Dataset rdf:about="http://dx.doi.org/""" +  str(record['doi']) + """\">\n"""
-            dcat += """               <dct:identifier>http://dx.doi.org/""" +  str(record['doi']) + """</dct:identifier>\n"""
-        else:
-            dcat += """            <dcat:Dataset rdf:about=\"""" + current_app.config['CFG_SITE_URL'] + """/""" + current_app.config['CFG_SITE_RECORD'] + """/""" + str(recid) + """">\n"""
-            dcat += """               <dct:identifier>""" + current_app.config['CFG_SITE_URL'] + """/""" + current_app.config['CFG_SITE_RECORD'] + """/""" + str(recid) + """     </dct:identifier>\n"""
+       if 'doi' in record:
+          dcat += """            <dcat:Dataset rdf:about="http://dx.doi.org/""" +  str(record['doi']) + """\">\n"""
+          dcat += """               <dct:identifier>http://dx.doi.org/""" +  str(record['doi']) + """</dct:identifier>\n"""
+       else:
+          dcat += """            <dcat:Dataset rdf:about=\"""" + current_app.config['CFG_SITE_URL'] + """/""" + current_app.config['CFG_SITE_RECORD'] + """/""" + str(recid) + """">\n"""
+          dcat += """               <dct:identifier>""" + current_app.config['CFG_SITE_URL'] + """/""" + current_app.config['CFG_SITE_RECORD'] + """/""" + str(recid) + """     </dct:identifier>\n"""
 
-            dcat += """               <dct:title xml:lang=\"""" + current_app.config['CFG_SITE_LANG'] + """\">""" + str(record['title']) + """</dct:title>\n"""
-            dcat += """               <dct:description xml:lang=\"""" + current_app.config['CFG_SITE_LANG'] + """\">""" + str(record['description']) + """</dct:description>\n"""
-            dcat += """               <dcat:theme rdf:resource=""/>\n"""
-            dcat += """               <dc:language>""" + current_app.config['CFG_SITE_LANG'] + """</dc:language>\n"""
-            dcat += """               <dct:publisher rdf:resource="http://www.lifewatch.eu/"/>\n"""
+       dcat += """               <dct:title xml:lang=\"""" + current_app.config['CFG_SITE_LANG'] + """\">""" + str(record['title']) + """</dct:title>\n"""
+       dcat += """               <dct:description xml:lang=\"""" + current_app.config['CFG_SITE_LANG'] + """\">""" + str(record['description']) + """</dct:description>\n"""
+       dcat += """               <dcat:theme rdf:resource=""/>\n"""
+       dcat += """               <dc:language>""" + current_app.config['CFG_SITE_LANG'] + """</dc:language>\n"""
+       dcat += """               <dct:publisher rdf:resource="http://www.lifewatch.eu/"/>\n"""
 
-            if record['access_right'] <> 'restricted' and record['access_right'] <> 'closed':
-                if 'url' in record['__license_text__']:
-                    dcat += """               <dct:license rdf:resource=\"""" + str((record['__license_text__'])['url']) + """\"/>\n"""
+       if 'access_right' in record:
+          if record['access_right'] <> 'restricted' and record['access_right'] <> 'closed':
+             if 'url' in record['__license_text__']:
+                dcat += """               <dct:license rdf:resource=\"""" + str((record['__license_text__'])['url']) + """\"/>\n"""
 
-                    if 'embargo_date' in record:
-                        dcat += """               <prism:embargoDate rdf:datatype="http://www.w3.org/2001/XMLSchema/#date">""" + str(record['embargo_date']) + """</prism:embargoDate>\n"""
+       if 'embargo_date' in record:
+          dcat += """               <prism:embargoDate rdf:datatype="http://www.w3.org/2001/XMLSchema/#date">""" + str(record['embargo_date']) + """</prism:embargoDate>\n"""
 
-                        for kw in record['keywords']:
-                            dcat += """               <dcat:keyword>""" + str(kw) + """</dcat:keyword>\n"""
+       if 'keywords' in record:
+          for kw in record['keywords']:
+              dcat += """               <dcat:keyword>""" + str(kw) + """</dcat:keyword>\n"""
 
-                            dcat += """               <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">""" + str(get_creation_date(recid)) + """</dct:issued>\n"""
-                            dcat += """               <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">""" + str(get_modification_date(recid)) + """</dct:modified>\n"""
+       dcat += """               <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">""" + str(get_creation_date(recid)) + """</dct:issued>\n"""
+       dcat += """               <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">""" + str(get_modification_date(recid)) + """</dct:modified>\n"""
 
-                            if 'period' in record:
-                                for period in record['period']:
-                                    dcat += """               <dct:temporal>\n"""
-                                    dcat += """                  <time:Interval>\n"""
-                                    dcat += """                     <rdf:type rdf:resource="http://purl.org/dc/terms/PeriodOfTime" />\n"""
-                                    dcat += """                     <time:hasBeginning>\n"""
-                                    dcat += """                        <time:Instant>\n"""
-                                    dcat += """                           <time:inXSDDateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(period['start']) + """</time:inXSDDateTime>\n"""
-                                    dcat += """                           </time:inXSDDateTime>\n"""
-                                    dcat += """                        </time:Instant>\n"""
-                                    dcat += """                     </time:hasBeginning>\n"""
-                                    dcat += """                     <time:hasEnd>\n"""
-                                    dcat += """                        <time:Instant>\n"""
-                                    dcat += """                           <time:inXSDDateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(period['end']) + """</time:inXSDDateTime>\n"""
-                                    dcat += """                        </time:Instant>\n"""
-                                    dcat += """                     </time:hasEnd>\n"""
-                                    dcat += """                  </time:Interval>\n"""
-                                    dcat += """               </dct:temporal>\n"""
+       if 'period' in record:
+          for period in record['period']:
+             dcat += """               <dct:temporal>\n"""
+             dcat += """                  <time:Interval>\n"""
+             dcat += """                     <rdf:type rdf:resource="http://purl.org/dc/terms/PeriodOfTime" />\n"""
+             if 'start' in period:
+                dcat += """                     <time:hasBeginning>\n"""
+                dcat += """                        <time:Instant>\n"""
+                dcat += """                           <time:inXSDDateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(period['start']) + """</time:inXSDDateTime>\n"""
+                dcat += """                           </time:inXSDDateTime>\n"""
+                dcat += """                        </time:Instant>\n"""
+                dcat += """                     </time:hasBeginning>\n"""
+             if 'end' in period:
+                dcat += """                     <time:hasEnd>\n"""
+                dcat += """                        <time:Instant>\n"""
+                dcat += """                           <time:inXSDDateTime rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">""" + str(period['end']) + """</time:inXSDDateTime>\n"""
+                dcat += """                        </time:Instant>\n"""
+                dcat += """                     </time:hasEnd>\n"""
+             dcat += """                  </time:Interval>\n"""
+             dcat += """               </dct:temporal>\n"""
 
-                                    if 'fft' in record:
-                                        for dis in record['fft']:
-                                            dcat += """               <dcat:distribution>\n"""
-                                            dcat += """                  <dcat:Distribution rdf:about="">\n"""
+       if 'frequency' in record:
+          for freq in record['frequency']:
+             dcat += """               <dct:accrualPeriodicity>\n"""
+             dcat += """                  <dct:Frequency>\n"""
+             dcat += """                     <rdf:value>\n"""
+             dcat += """                        <time:DurationDescription>\n"""
+             dcat += """                           <rdfs:label>""" + str(freq['size']) + """ """ + str(freq['unit']) + """s</rdfs:label>\n"""
+             dcat += """                           <time:""" + str(freq['unit']) + """s rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">""" + str(freq['size']) + """</time:""" + str(freq['unit']) + """s>\n"""
+             dcat += """                        </time:DurationDescription>\n"""
+             dcat += """                     </rdf:value>\n"""
+             dcat += """                  </dct:Frequency>\n"""
+             dcat += """               </dct:accrualPeriodicity>\n"""
 
-                                            if 'description' in dis:
-                                                dcat += """                     <dct:title xml:lang="en">""" + str(dis['description']) + """</dct:title>\n"""
+       if 'fft' in record:
+          for dis in record['fft']:
+             dcat += """               <dcat:distribution>\n"""
+             dcat += """                  <dcat:Distribution rdf:about="">\n"""
+             if 'description' in dis:
+                dcat += """                     <dct:title xml:lang="en">""" + str(dis['description']) + """</dct:title>\n"""
+             if 'url' in dis:
+                dcat += """                     <dct:accessURL  rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">""" + str(dis['url']) + """</dct:accessURL>\n"""
+                dcat += """                     <dct:format>\n"""
+                mimetype = str(guess_mimetype_and_encoding(dis['url'])[0])
+                dcat += """                        <dct:IMT rdf:value=\"""" + mimetype + """\" rdfs:label=\"""" + str(guess_extension(mimetype)[1:]).upper() + """\"/>\n"""
+                dcat += """                     </dct:format>\n"""
+             if 'file_size' in dis:
+                dcat += """                     <dcat:byteSize rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">""" + str(dis['file_size']) + """</dcat:byteSize>\n"""
+             dcat += """                  </dcat:Distribution>\n"""
+             dcat += """               </dcat:distribution>\n"""
 
-                                                dcat += """                     <dct:accessURL  rdf:datatype="http://www.w3.org/2001/XMLSchema#anyURI">""" + str(dis['url']) + """</dct:accessURL>\n"""
-                                                dcat += """                     <dct:format>\n"""
-                                                mimetype = str(guess_mimetype_and_encoding(dis['url'])[0])
-                                                dcat += """                        <dct:IMT rdf:value=\"""" + mimetype + """\" rdfs:label=\"""" + str(guess_extension(mimetype)[1:]).upper() + """\"/>\n"""
-                                                dcat += """                     </dct:format>\n"""
-                                                dcat += """                     <dcat:byteSize rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">""" + str(dis['file_size']) + """</dcat:byteSize>\n"""
-                                                dcat += """                  </dcat:Distribution>\n"""
-                                                dcat += """               </dcat:distribution>\n"""
-
-                                                dcat += """            </dcat:Dataset>\n"""
-                                                dcat += """         </dcat:dataset>\n"""
+       dcat += """            </dcat:Dataset>\n"""
+       dcat += """         </dcat:dataset>\n"""
 
     dcat += """      </dcat:Catalog>\n"""
     dcat += """   </rdf:RDF>"""
