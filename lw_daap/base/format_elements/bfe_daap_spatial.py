@@ -32,7 +32,6 @@ def format_element(bfo, spatial=[]):
     markers = []
     coords = ((float(c['north']), float(c['south']),
                float(c['east']), float(c['west'])) for c in spatial)
-    current_app.logger.debug("COORDS: %s" % coords)
     for n, s, e, w in coords:
         norths.append(n)
         souths.append(s)
@@ -44,18 +43,17 @@ def format_element(bfo, spatial=[]):
             polygons.append(((n, w), (s, w), (s, e), (n, e)))
     center = (((max(norths) + min(souths)) / 2.),
               ((max(easts) + min(wests)) / 2.))
-    bounds = ((min(souths), min(wests)), (max(norths), max(easts)))    
+    bounds = ((min(souths), min(wests)), (max(norths), max(easts)))
     r = ["<div id='spatial'",
          "class='map'",
          "data-center='%s'" % json.dumps(center),
          "data-polygons='%s'" % json.dumps(polygons),
          "data-markers='%s'" % json.dumps(markers),
-         "data-bounds='%s'" % json.dumps(bounds),   
+         "data-bounds='%s'" % json.dumps(bounds),
          "></div>",
-        ]
+         ]
     return ' '.join(r)
 
 
 def escape_values(bfo):
     return 0
-

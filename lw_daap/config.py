@@ -20,6 +20,13 @@
 # LifeWatch Open Science Framework
 # Configuration
 
+from datetime import timedelta
+import warnings
+import invenio.ext.login.legacy_user
+import lw_daap.base.auth.github
+import lw_daap.base.auth.google
+import lw_daap.base.auth.facebook
+
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -29,8 +36,9 @@ sys.setdefaultencoding('utf8')
 
 # MonkeyPatch the UserInfo so it gets our group stuff
 # must be done quite early!
-import invenio.ext.login.legacy_user
 old_login = invenio.ext.login.legacy_user.UserInfo._login
+
+
 def new_login(self, uid, force=False):
     from lw_daap.modules.invenio_groups.models import Group
     data = old_login(self, uid, force)
@@ -38,12 +46,8 @@ def new_login(self, uid, force=False):
     return data
 invenio.ext.login.legacy_user.UserInfo._login = new_login
 
-import warnings
 warnings.filterwarnings('ignore')
 
-import lw_daap.base.auth.github
-import lw_daap.base.auth.google
-import lw_daap.base.auth.facebook
 
 # Global config
 CFG_SITE_LANGS = ["en"]
@@ -53,6 +57,9 @@ CFG_SITE_DESCRIPTION = "LifeWatch Open Science Framework DESC"
 CFG_SITE_NAME_INTL = {
     "en": CFG_SITE_NAME
 }
+
+CFG_EMAIL_BACKEND = "flask_email.backends.smtp.Mail"
+
 CFG_SITE_SUPPORT_EMAIL = "support@mail"
 CFG_SITE_ADMIN_EMAIL = "support@mail"
 CFG_WEBALERT_ALERT_ENGINE_EMAIL = "support@mail"
@@ -66,7 +73,12 @@ COMMUNITIES_ID_PREFIX_PROVISIONAL = 'provisional-community'
 COMMUNITIES_PORTALBOXES = [
     'communities/portalbox_main.html',
 ]
-
+COMMUNITIES_PERIODIC_TASKS = {
+    'ranking_deamon': {
+        'run_every': timedelta(minutes=20),
+    },
+}
+CFG_LWDAAP_BIBSCHED_CHECK_PERIOD = timedelta(minutes=20)
 
 DISABLE_WARNINGS = True
 
@@ -84,7 +96,7 @@ PACKAGES = [
     "lw_daap.modules.invenio_groups",
     "lw_daap.modules.github",
     "lw_daap.modules.analyze",
-    "lw_daap.modules.pids",
+    "lw_daap.modules.record_actions",
     "lw_daap.modules.profile",
     "lw_daap.modules.projects",
     "lw_daap.deploy",

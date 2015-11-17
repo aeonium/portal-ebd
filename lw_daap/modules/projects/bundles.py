@@ -16,20 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+from invenio.ext.assets import Bundle, RequireJSFilter
+from invenio.base.bundles import jquery as _j, invenio as _i
 
-from flask import url_for 
-from flask_login import current_user
-
-from invenio.ext.cache import cache
-
-from ..utils import build_doi, get_cache_key
-
-
-def format_element(bfo, recid=None):
-    key = get_cache_key(recid)
-    cache_action = cache.get(key)
-    return cache_action
-
-def escape_values(bfo):
-    return 0
+js = Bundle(
+    "js/projects/integrate.js",
+    output="integrate.js",
+    filters=RequireJSFilter(exclude=[_j, _i]),
+    weight=60,
+)

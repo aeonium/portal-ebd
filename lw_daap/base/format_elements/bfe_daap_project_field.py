@@ -16,9 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
 
+from lw_daap.modules.projects.models import Project
 
-def build_doi(recid):
-   return '10.5281/lwdaap.%s' % recid 
+from flask import current_app
 
-def get_cache_key(recid):
-    return 'pid_mint:%s' % recid
+
+def format_element(bfo, pid, field=id):
+    p = Project.get_project(pid)
+    return getattr(p, field, None) if p else None
+
+
+def escape_values(bfo):
+    return 0

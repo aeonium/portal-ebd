@@ -16,26 +16,38 @@
  # along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
  #}
 
-{% from "format/record/record_macros.tpl" import render_authors, render_access_rights %}
+{% from "format/record/record_macros.tpl" import render_authors, render_access_rights, render_deposition_type, label %}
 
 {% extends "format/record/Default_HTML_brief_base.tpl" %}
 
-{% block above_record_header %}
-  {{ render_authors(record, 4) if record.get('authors') }}
-{% endblock %}
+{% set record = get_updated_record(record) %}
+
+{% block above_record_header %}{% endblock %}
 
 {% block record_header %}
 <a href="{{ url_for('record.metadata', recid=record['recid']) }}">
-    {{ record.get('title', '') }}</a>
+  {{ record.get('title', '') }}
+</a>
 {% endblock %}
 
 {% block record_content %}
-  {{ record.get('description', '')|sentences(3) }}
-{% endblock %}
+  <small class="text-muted">{{ record.description|sentences(3) }}</small>
 
-{% block record_info %}
-  {{ render_access_rights(record) if record.get('access_right') }}
-  {{ '<a href="http://dx.doi.org/%(doi)s" title="DOI" target="_blank"><i class="glyphicon glyphicon-barcode"></i> %(doi)s</a>'|format(doi=record['doi']) if record.get('doi') }}
+    <a href="{{url_for('record.metadata', recid=record.recid)}}" title="PID" target="_blank">
+        {{ label('PID', get_pid(record.recid), cbgc='#D9634C') }}
+    </a> 
+    {% if record.get('doi') %}
+    <a href="http://dx.doi.org/{{record.get('doi')}}" title="DOI" target="_blank">
+       | {{ label('DOI', record.get('doi'), cbgc='#0F81C2') }}
+    </a> 
+    {% endif %}
+  | {{ render_access_rights(record) if record.get('access_right') }}  
+  | {{ render_deposition_type(record) if record.get('upload_type') }} 
+  {% if record.record_selected_for_archive %}                                  
+        | {{ label(content='archived') }}                                       
+  {% endif %} 
+  | {{ record.publication_date }}
+
 {% endblock %}
 
 {% block fulltext_snippets %}{% endblock %}

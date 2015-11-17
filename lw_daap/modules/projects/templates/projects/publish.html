@@ -1,0 +1,63 @@
+{#
+# This file is part of Lifewatch DAAP.
+# Copyright (C) 2015 Ana Yaiza Rodriguez Marrero.
+#
+# Lifewatch DAAP is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Lifewatch DAAP is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
+#}
+
+
+{% extends 'projects/show.html' %}
+{% set active='publish' %}
+
+
+{% from 'projects/macros.tpl' import record_table with context %}
+
+
+{% block javascript %}
+{{ super() }}
+<script type="text/javascript">
+var publishUrl
+require(['jquery'], function($) {
+    $('#publish-confirm-dialog').on('show.bs.modal', function (event) {
+      var a = $(event.relatedTarget)
+      publishUrl = a.data('publishUrl') // Extract info from data-* attributes
+      var modal = $(this)
+      modal.find('#publish-form').attr('action', publishUrl);
+      modal.find('#publish-modal-state-title').hide();  
+      });
+    });
+</script>
+{% endblock %}
+
+
+{% block project_body %}
+
+{% from "lw_daap/record_actions/macros.html" import record_action_modal %}
+
+{% set modalbody %}
+<ul>
+  <li>Would you like to public this record?</li> 
+  <li>If you publish it, the record will be public according to the access right you had set.</li>
+</ul>
+{% endset %}
+
+{{ record_action_modal('publish', 'Publish record?', 'Publish', modalbody, 'publishUrl', publishform) }}
+
+<div class="col-md-12">
+  <h3>Publish</h3>
+  <p>Make records available publicly for all users of the framework. Once you select publish your record it will become available for curation in the default community {{ config.CFG_SITE_NAME }} and in any other you have choosen. If the record is accepted, it will be shortly discoverable for the general public.</p>
+
+  {{ record_table('publish', records, "Project records")|safe}}
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{#
+# This file is part of Lifewatch DAAP.
+# Copyright (C) 2015 Ana Yaiza Rodriguez Marrero.
+#
+# Lifewatch DAAP is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Lifewatch DAAP is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
+#}
+
+
+{% extends 'projects/show.html' %}
+{% set active='curate' %}
+
+
+{% from 'projects/macros.tpl' import record_table with context %}
+
+
+{% block javascript %}
+{{ super() }}
+<script type="text/javascript">
+var curateUrl;
+require(['jquery'], function($) {
+    $('#curate-confirm-dialog').on('show.bs.modal', function (event) {
+      var a = $(event.relatedTarget);
+      curateUrl = a.data('curateUrl'); // Extract info from data-* attributes
+      var modal = $(this);
+      modal.find('#curate-form').attr('action', curateUrl);
+      modal.find('#curate-modal-state-title').hide();
+      });
+    });
+</script>
+{% endblock %}
+
+
+{% block project_body %}
+
+{% from "lw_daap/record_actions/macros.html" import record_action_modal %}
+
+{% set modalbody %}
+<ul>
+  <li>Does this record fullfill the quality requirements asked for?</li> 
+  <li>If you curate it, the record will be accesible in the next data life-cycle steps.</li>
+</ul>
+{% endset %}
+
+{{ record_action_modal('curate', 'Curate record?', 'Curate', modalbody, 'curateUrl', curateform) }}
+
+<div class="class-md-12">
+  <h3>Curate</h3>
+  <p>Identify dataset records suitable for curation and tag them as curated to certify their quality. Tagged records will be available for next steps of the data life-cycle.</p>
+
+  {{ record_table('curate', records, "Dataset records")|safe}}
+</div>
+{% endblock %}

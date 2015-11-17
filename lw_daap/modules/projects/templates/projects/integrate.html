@@ -1,0 +1,61 @@
+{#
+# This file is part of Lifewatch DAAP.
+# Copyright (C) 2015 Ana Yaiza Rodriguez Marrero.
+#
+# Lifewatch DAAP is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Lifewatch DAAP is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Lifewatch DAAP. If not, see <http://www.gnu.org/licenses/>.
+#}
+
+
+{% extends 'projects/show.html' %}
+{% set active='integrate' %}
+
+
+{% from 'projects/macros.tpl' import record_table with context %}
+
+{% block javascript %}
+{{ super() }}
+<script type="text/javascript">
+  require(
+    [
+      "jquery",
+      "js/projects/integrate"
+    ],
+    function($, integrate) {
+        integrate.attachTo("#integrateForm");
+    });
+</script>
+{% endblock %}
+
+{% block project_body %}
+
+<div class="col-md-9">
+  <h3>Integrate</h3>
+  <p>Create analysis records by combining datasets and software belonging to this project. Additional public or access permited records can be integrated during the deposit.</p>
+</div>
+
+<div class="col-md-3">
+  <div class="spacer20"></div>
+  <form method="POST" id="integrateForm">
+    {{ form.integrate }}
+    <div style="display: none;">{{ form.records }}</div>
+    {{ form.hidden_fields }}
+    <button type="submit" id="btn-deposit-analysis" class="btn btn-block btn-danger">
+      <i class="fa fa-bar-chart-o fa-2x fa-fw valign"></i>Register new analysis
+    </button>
+  </form>
+</div>
+
+{{ record_table('integrate', records, "Dataset and Software records", selected_records=selected_records)|safe}}
+
+{% endblock %}

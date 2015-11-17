@@ -27,27 +27,48 @@ render_access_rights,
 render_deposition_type,
 render_rel_input,
 open_panel_section,
-close_panel_section
+close_panel_section,
+label,
+archive_panel
 with context
 %}
 
-{% include "lw_daap/pids/doi_modal.html" %}
+{% include "lw_daap/record_actions/doi_modal.html" %}
 
 {% if not daap_record %}
 {% set daap_record = record %}
 {% endif %}
+
+{{ archive_panel(daap_record) }}
+
 <div class="record-details">
   {% block header %}
   <div class="row">
-    <div class="col-sm-12 col-md-4 pull-right">
-    </div>
-
-    <div class="col-sm-12 col-md-8">
+    {# <div class="col-sm-9 col-md-4 pull-right"></div> #}
+    <div class="col-sm-9 col-md-8">
       <h2>{{ daap_record.title }}</h2>
     </div>
-    <div class="col-sm-12">
+    {% if daap_record.project %}
+    <div class="col-sm-3 pull-right">
+    {% set record_project_path = {
+        'dataset': 'collect',
+        'software': 'collect',
+        'dmp': 'plan',
+        'analysis': 'analyze',
+    }%}
+    <a href="{{ url_for('lwdaap_projects.show',
+                        project_id=bfe_daap_project_field(bfo, pid=daap_record.project, field='id'),
+                        path=record_project_path[daap_record.upload_type])
+             }}"
+        class="btn btn-lg btn-primary pull-right"
+        style="margin-top: 20px;">
+        <i class="fa fa-list-alt"></i> Go to project
+    </a>
+    </div>
+    <div class="col-sm-9">
       <h4 style="margin-top: 0px">{{ render_authors(daap_record, 4) }}</h4>
     </div>
+       {% endif %}
   </div>
 
   <div class="spacer30"></div>
@@ -56,10 +77,16 @@ with context
     <div class="col-sm-12 col-md-3">
 
       {% if metadata_view %}
-      {% if current_user.get_id() == daap_record.get('owner', {}).get('id', -1)|int %} {% if not daap_record.doi and not bfe_is_doi_being_minted(bfo, recid=recid) %}
-      <button class="btn btn-block btn-lg btn-default" 
+      {% if current_user.get_id() == daap_record.get('owner', {}).get('id', -1)|int %} 
+      {% if not daap_record.doi and not bfe_is_doi_being_minted(bfo, recid=recid) %}
+      <button class="btn btn-block btn-lg btn-default"
         data-toggle="modal" data-target="#doi-confirm-dialog">
         <i class="fa fa-barcode"></i> Mint Doi</button>
+      {% endif %}
+      {% if not daap_record.record_selected_for_archive %}
+      <button class="btn btn-block btn-lg btn-default"
+        data-toggle="modal" data-target="#archive-confirm-dialog">
+        <i class="fa fa-archive"></i> Archive</button>
       {% endif %}
       <a class="btn btn-block btn-lg btn-primary" href="{{ url_for('webdeposit.edit', uuid=daap_record.owner.deposition_id|int) }}"><i class="fa fa-pencil-square-o"></i> Edit</a>
       {% endif %}
@@ -75,9 +102,18 @@ with context
         </div>
         <div class="panel-body">
           <h4>Publication  Date</h4>{{ daap_record.publication_date }}
-          <h4>Persistent Identifier</h4>{% include "lw_daap/pids/doi_info.html" %}
-          <h4>Access</h4><h4> {{ render_access_rights(daap_record) }}</h4>
-          <h4>Record type</h4><h4> {{ render_deposition_type(daap_record) }}</h4>
+          <h4>Persistent Identifiers</h4>
+            <a href="{{url_for('record.metadata', recid=daap_record.recid)}}" title="PID" target="_blank">
+            {{ label("PID", get_pid(daap_record.recid), cbgc="#D9634C") }}
+            </a>
+            <br />
+            {% include "lw_daap/record_actions/doi_info.html" %}
+          <h4>Access</h4>{{ render_access_rights(daap_record) }}
+          <h4>Record type</h4>{{ render_deposition_type(daap_record) }}
+          {% if record.record_selected_for_archive %}                                  
+          <h4>Archive</h4>
+          {{ label(content='archived') }}                                       
+          {% endif %} 
           {% if daap_files %}
           <h4>Files</h4>
           {{ daap_files|length }}
@@ -98,8 +134,14 @@ with context
         '<i class="fa fa-info"></i> Basic information', 1, False) }}
         <table class="table table-hover">
           <tr>
-            <th class="col-md-3"><i class="fa fa-barcode fa-fw"></i> Persistent Identifier</th>
-            <td class="col-md-9">{% include "lw_daap/pids/doi_info.html" %}</td>
+            <th class="col-md-3"><i class="fa fa-barcode fa-fw"></i> Persistent Identifiers</th>
+            <td class="col-md-9">
+                <a href="{{url_for('record.metadata', recid=daap_record.recid)}}" title="PID" target="_blank">
+                            {{ label("PID", get_pid(daap_record.recid), cbgc="#D9634C") }}
+                </a>
+                <br />
+                {% include "lw_daap/record_actions/doi_info.html" %}
+            </td>
           </tr>
 
           {% if daap_record.publication_date %}
@@ -145,6 +187,19 @@ with context
         </table>
         {{ close_panel_section() }}
 
+        {% if daap_record.project %}
+        {{ open_panel_section(
+        '<i class="fa fa-list-alt"></i> Related projects', 'projects', True) }}
+        <table class="table table-hover">
+        <tr>
+        <th class="col-md-3"><i class="fa fa-list-alt fa-fw"></i>Projects</th>
+        <td class="col-md-9">
+         {{ bfe_daap_project_field(bfo, pid=daap_record.project, field='title') }}
+        </td>
+        </tr>
+        </table>
+        {{ close_panel_section() }}
+        {% endif %}
 
         {% if daap_record.upload_type == "analysis" %}
         {% if daap_record.rel_dataset or daap_record.rel_software %}
@@ -258,7 +313,7 @@ with context
           <i class="fa fa-bars"></i>Related identifiers', 5, True) }}
           <table class="table table-hover">
             <tr>
-            
+
               <th class="col-md-3"><i class="fa fa-bars fa-fw"></i> Related identifiers</th>
               <td class="col-md-9">
                 {% for relid in daap_record.related_identifiers %}
